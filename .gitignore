@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+
+# macOS auto-generated file
+.DS_Store
