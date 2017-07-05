@@ -4,6 +4,7 @@
 #include <vector>
 #include <unistd.h>
 #include <bass.h>
+#include <bassenc.h>
 #include "hrtf.hpp"
 
 #define X cos(theta)
@@ -30,10 +31,12 @@ int main() {
     HRTF h("full");
     printf("Enter audio filename: ");
     char filename[256];
-    fgets(filename, 256, stdin);
+    fgets(filename, 240, stdin);
     filename[strlen(filename) - 1] = '\0';
     HSTREAM handle = BASS_StreamCreateFile(FALSE, filename, 0, 0, 0);
     BASS_ChannelSetDSP(handle, hrtfDSP, &h, 1);
+    strcat(filename, ".3d.wav");
+    HENCODE encode = BASS_Encode_Start(handle, filename, BASS_ENCODE_PCM, NULL, NULL);
     BASS_ChannelPlay(handle, FALSE);
     for (float theta = 0;; theta += M_PI / 1000) {
         if (BASS_ChannelIsActive(handle) == BASS_ACTIVE_STOPPED) {
@@ -41,9 +44,10 @@ int main() {
         }
         float x = (X), y = (Y), z = (Z);
         h.setSpeakerPosition(x, y, z);
-        printf("(%f, %f ,%f)\n", x, y, z);
+        printf("(%f, %f, %f)\n", x, y, z);
         usleep(10000);
     }
+    BASS_Encode_Stop(encode);
     BASS_StreamFree(handle);
     BASS_Free();
     return 0;
